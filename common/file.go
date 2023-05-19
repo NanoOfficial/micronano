@@ -13,7 +13,9 @@ import (
 	"io/ioutil"
 	"os"
 
+	errors "github.com/NanoOfficial/micronano/error"
 	log "github.com/NanoOfficial/micronano/logger"
+	"gopkg.in/yaml.v3"
 )
 
 type Type string
@@ -29,7 +31,7 @@ type File struct {
 	fileType Type
 }
 
-func openFile(filePath string, fileType Type) (*File, error) {
+func OpenFile(filePath string, fileType Type) (*File, error) {
 	log.New("open file: "+filePath, log.TypeDebug)
 
 	file, err := os.Open(filePath)
@@ -45,7 +47,6 @@ func openFile(filePath string, fileType Type) (*File, error) {
 		content:  content,
 		fileType: fileType,
 	}, nil
-
 }
 
 func (f *File) Close() {
@@ -56,7 +57,7 @@ func (f *File) Close() {
 
 func (f *File) Parse(out interface{}) error {
 	if f.fileType == JSON {
-		err := f.parseJson(out)
+		err := f.parseJSON(out)
 
 		if err != nil {
 			return err
@@ -65,13 +66,32 @@ func (f *File) Parse(out interface{}) error {
 		return nil
 	}
 
-	return nil
+	if f.fileType == YML {
+		err := f.parseYML(out)
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	return errors.ErrInvalidFileType
 }
 
-func (f *File) parseJson(out interface{}) error {
+func (f *File) parseJSON(out interface{}) error {
 	errUnmarshal := json.Unmarshal(f.content, out)
 	if errUnmarshal != nil {
 		return errUnmarshal
+	}
+
+	return nil
+}
+
+func (f *File) parseYML(out interface{}) error {
+	err := yaml.Unmarshal(f.content, out)
+	if err != nil {
+		return err
 	}
 
 	return nil
