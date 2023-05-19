@@ -56,3 +56,21 @@ func (s *SQLite) RunMigrations() error {
 
 	return nil
 }
+
+func (s *SQLite) RevertMigrations() error {
+	if len(s.migrations) < 1 {
+		return nil
+	}
+
+	for i := len(s.migrations) - 1; i >= 0; i-- {
+		if _, err := s.Db.Exec(s.migrations[i].downQuery); err != nil {
+			return err
+		}
+
+		if _, err := s.Db.Exec(DeleteMigrationEntry, s.migrations[i].name); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
