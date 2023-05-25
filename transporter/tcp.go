@@ -1,11 +1,8 @@
 package transporter
 
-import (
-	"github.com/NanoOfficial/micronano/transporter"
-)
-
 type Tcp struct {
-	transporter.Transporter
+	// transporter.Transporter
+	Transporter
 }
 
 func New() *Tcp {
